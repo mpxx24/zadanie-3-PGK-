@@ -22,7 +22,10 @@ namespace zadanie3 {
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e) {
-            e.Graphics.DrawRectangle(Pens.Black, 50, 50, 700, 450);
+            e.Graphics.DrawRectangle(Pens.Black, ConstantsHelper.BoxLeftBorder, 
+                ConstantsHelper.BoxTopBorder, 
+                ConstantsHelper.BoxRightBorder + ConstantsHelper.BoxLeftBorder, 
+                ConstantsHelper.BoxBottomBorder + ConstantsHelper.BoxTopBorder);
 
             e.Graphics.FillEllipse(Brushes.SpringGreen, circlePositionX, circlePositionY, ConstantsHelper.BallSize,
                 ConstantsHelper.BallSize);
