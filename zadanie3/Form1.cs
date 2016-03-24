@@ -1,18 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
 namespace zadanie3 {
-
     public partial class Form1 : Form {
+        private readonly List<EnemyBall> balls;
         private float circlePositionX = 150;
         private float circlePositionY = 150;
-        private float enemySpeedX = 10;
-        private float enemySpeedY = 10;
-        private float firstEnemyPositionX = 400;
-        private float firstEnemyPositionY = 60;
         private float positionChangeX;
-        private double positionChangeY;
+        private float positionChangeY;
         private float speedX = 10;
         private float speedY = 10;
 
@@ -21,6 +18,7 @@ namespace zadanie3 {
             timer1.Enabled = true;
             timer1.Interval = ConstantsHelper.TimerInterval;
             timer1.Start();
+            balls = CreateEnemies();
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e) {
@@ -28,8 +26,11 @@ namespace zadanie3 {
 
             e.Graphics.FillEllipse(Brushes.SpringGreen, circlePositionX, circlePositionY, ConstantsHelper.BallSize,
                 ConstantsHelper.BallSize);
-            e.Graphics.FillEllipse(Brushes.Red, firstEnemyPositionX, firstEnemyPositionY, ConstantsHelper.BallSize,
-                ConstantsHelper.BallSize);
+
+            foreach (var enemyBall in balls) {
+                e.Graphics.FillEllipse(Brushes.Red, enemyBall.PositionX, enemyBall.PositionY, ConstantsHelper.BallSize,
+                    ConstantsHelper.BallSize);
+            }
         }
 
         private void timer1_Tick(object sender, EventArgs e) {
@@ -38,8 +39,10 @@ namespace zadanie3 {
             circlePositionY += speedY;
             positionChangeY += speedY;
 
-            firstEnemyPositionX += enemySpeedX;
-            firstEnemyPositionY += enemySpeedY;
+            foreach (var enemyBall in balls) {
+                enemyBall.PositionX -= enemyBall.SpeedX;
+                enemyBall.PositionY += enemyBall.SpeedY;
+            }
 
             //bounce - wall
             if (circlePositionX <= ConstantsHelper.BoxLeftBorder) {
@@ -56,22 +59,24 @@ namespace zadanie3 {
             }
 
             //enemy bounce - wall
-            if (firstEnemyPositionX <= ConstantsHelper.BoxLeftBorder) {
-                enemySpeedX = (float) (enemySpeedX*(Math.Cos(ConstantsHelper.Angle)));
-            }
-            else if (firstEnemyPositionY <= ConstantsHelper.BoxTopBorder) {
-                enemySpeedY = (float) (enemySpeedY*(Math.Cos(ConstantsHelper.Angle)));
-            }
-            else if (firstEnemyPositionX >= ConstantsHelper.BoxRightBorder) {
-                enemySpeedX = (float) (enemySpeedX*(Math.Cos(ConstantsHelper.Angle)));
-            }
-            else if (firstEnemyPositionY >= ConstantsHelper.BoxBottomBorder) {
-                enemySpeedY = (float) (enemySpeedY*(Math.Cos(ConstantsHelper.Angle)));
+            foreach (var enemyBall in balls) {
+                if (enemyBall.PositionX <= ConstantsHelper.BoxLeftBorder) {
+                    enemyBall.SpeedX = (float) (enemyBall.SpeedX*(Math.Cos(ConstantsHelper.Angle)));
+                }
+                else if (enemyBall.PositionY <= ConstantsHelper.BoxTopBorder) {
+                    enemyBall.SpeedY = (float) (enemyBall.SpeedY*(Math.Cos(ConstantsHelper.Angle)));
+                }
+                else if (enemyBall.PositionX >= ConstantsHelper.BoxRightBorder) {
+                    enemyBall.SpeedX = (float) (enemyBall.SpeedX*(Math.Cos(ConstantsHelper.Angle)));
+                }
+                else if (enemyBall.PositionY >= ConstantsHelper.BoxBottomBorder) {
+                    enemyBall.SpeedY = (float) (enemyBall.SpeedY*(Math.Cos(ConstantsHelper.Angle)));
+                }
             }
 
             //hit enemy
-            //if (Math.Abs(circlePositionX - firstEnemyPositionX) < 100 && Math.Abs(circlePositionY - firstEnemyPositionY) < 100) {
-            //    //speedX = speedX*-1;
+            //if (Math.Abs(circlePositionX - firstEnemyPositionX) < ConstantsHelper.BallSize && Math.Abs(circlePositionY - firstEnemyPositionY) < ConstantsHelper.BallSize) {
+            //    speedX = speedX*-1;
             //    speedY = speedY*-1;
             //    enemySpeedX = enemySpeedX*-1;
             //    enemySpeedY = enemySpeedY*-1;
@@ -85,20 +90,16 @@ namespace zadanie3 {
                 "debug info:" + Environment.NewLine +
                 "circle pos x = {0}," + Environment.NewLine +
                 "circle pos y = {1}," + Environment.NewLine +
-                "enemy circle pos x = {10}," + Environment.NewLine +
-                "enemy circle pos y = {11}," + Environment.NewLine +
                 "number of steps = {2}" + Environment.NewLine +
                 "positionChangeX = {3}," + Environment.NewLine +
                 "positionChangeY = {4}," + Environment.NewLine +
                 "speed X = {5}" + Environment.NewLine +
                 "speed Y = {6}" + Environment.NewLine +
-                "enemy speed X = {12}" + Environment.NewLine +
-                "enemy speed Y = {13}" + Environment.NewLine +
                 "bounce angle = {7}" + Environment.NewLine +
                 "window height = {8}," + Environment.NewLine +
                 "window width = {9}",
                 circlePositionX + positionChangeX, circlePositionY + positionChangeY, 0, positionChangeX,
-                positionChangeY, speedX, speedY, ConstantsHelper.Angle, Height, Width, firstEnemyPositionX, firstEnemyPositionY, enemySpeedX, enemySpeedY);
+                positionChangeY, speedX, speedY, ConstantsHelper.Angle, Height, Width);
 
             #endregion
         }
@@ -115,6 +116,19 @@ namespace zadanie3 {
                 }
             }
         }
-    }
 
+        private static List<EnemyBall> CreateEnemies() {
+            var result = new List<EnemyBall>();
+            for (var i = 1; i < 4; i++) {
+                var ball = new EnemyBall {
+                    PositionX = i*100,
+                    PositionY = i*100,
+                    SpeedX = (float) (Math.Pow(-1, i)*10),
+                    SpeedY = (float) (Math.Pow(-1, i)*10)
+                };
+                result.Add(ball);
+            }
+            return result;
+        }
+    }
 }
